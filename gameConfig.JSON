@@ -1,0 +1,10 @@
+{
+    "roundsPlayed" : 0,
+    "survivedTurnsAvg" : 0,
+    "bombsUtilized" : 0,
+    "gameOverCause" : null,
+    "gameOverTurn" : 0,
+    "obstacleDestructionRate" : null,
+    "enemyFrequency" : 0.10,
+    "EnemyQuantity" : 0
+}
