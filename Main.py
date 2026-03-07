@@ -1,3 +1,5 @@
+import os
+
 from controller.Gameplay import Gameplay
 
 def main():
@@ -5,4 +7,6 @@ def main():
     gamePlay.run()
 
 if __name__ == "__main__":
+    os.system('cls' if os.name == 'nt' else 'clear') 
     main()
+    
