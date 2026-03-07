@@ -2,6 +2,8 @@ class Bomb:
     timer = 2
     bombRange = 3
 
+    SYMBOL = "B"
+
     def __init__(self):
         pass
 
