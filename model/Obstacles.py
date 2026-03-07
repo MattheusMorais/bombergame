@@ -1,12 +1,24 @@
 import random
 
+from service.GameState import GameState
+
 
 class Obstacles:
 
-    def __init__(self, tag):
-        pass
+    DESTR = "+"
+    INDESTR = "#"
+
+    def __init__(self, gameState):
+        self.gameState = gameState
 
     def isDestructable(self):
-        return random.choice([True, False])
-
+        destructableRate = self.gameState.config["obstacleDestructionRate"]
+        randomRate = random.random()
+        if randomRate < destructableRate:
+            print("Objeto destrutivel gerado")
+            return True
+        else:
+            print("Objeto indestrutivel gerado")
+            return False
+            
     
