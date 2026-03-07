@@ -2,17 +2,27 @@ from model.Bomb import Bomb
 
 class Player:
 
-    def __init__(self, name):
-        self.name = name
+    SYMBOL = "P"
 
-    def move(self, command, position):
-        bomb.timer -= 1
+    directions = {
+        "w" : (-1,0),
+        "a" : (0,-1),
+        "s" : (1,0),
+        "d" : (0,1)
+    }
+
+    spawn_position = (1,1)
+
+    def __init__(self):
         pass
 
-    def putBomb(self, position):
+    def move(self, command, gamemap):
+        pass
+
+    def putBomb(self, gamemap):
         bomb = Bomb()
         pass
 
-
-
-    
+    def is_walkable(self, gamemap):
+        pass
+        
