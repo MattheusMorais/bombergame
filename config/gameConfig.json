@@ -1,0 +1,15 @@
+{
+    "roundsPlayed" : 1,
+    "survivedTurns" : 1,
+    "bombsUtilized" : 0,
+    "gameOverCause" : null,
+    "gameOverTurn" : 0,
+    "maximumTurn" : 11,
+    "bombRange" : 2,
+    "bombTimer" : 2,
+    "enemyStart" : 2,
+    "enemyQuantity" : 2,
+    "enemySpawnFrequency" : 0,
+    "obstacleDestructionRate" : 0.90
+    
+}
