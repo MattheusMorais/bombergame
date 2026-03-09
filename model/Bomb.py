@@ -1,22 +1,26 @@
 class Bomb:
-    timer = 2
-    bombRange = 3
-
+    
     SYMBOL = "B"
 
-    def __init__(self):
-        pass
+    def __init__(self, row, col, game_state):
+        self.row = row
+        self.col = col
+        self.timer = game_state.config["bombTimer"]
+        self.range = game_state.config["bombRange"]
+        
+    def tick(self):
+        self.timer -= 1
+        if self.timer == 0:
+            return True
+        
+    def get_explosion_tiles(self):
+        tiles = [(self.row, self.col)]
 
-    def explosion(self):
-        if player in rangeOfExplosion:
-            print("Player got exploded. GameOver...")
-        elif enemy in rangeOfExplosion:
-            #enemy vanishes from map(matrix)
-            pass
-        elif "+" in rangeOfExplosion:
-            # destroy object
-            pass
-        pass
-
-
-
+        for i in range(1, self.range + 1):
+            tiles.append((self.row + i, self.col))
+            tiles.append((self.row - i, self.col))
+            tiles.append((self.row, self.col + i))
+            tiles.append((self.row, self.col - i))
+        
+        return tiles
+    
