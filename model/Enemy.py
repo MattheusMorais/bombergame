@@ -1,9 +1,10 @@
 import random
+from model.Obstacles import Obstacles
+from model.Bomb import Bomb
 
 class Enemy:
 
     SYMBOL = "E"
-
     directions = {
         "w" : (-1,0),
         "a" : (0,-1),
@@ -11,27 +12,39 @@ class Enemy:
         "d" : (0,1)
         }
 
-    def __init__(self, position):
-        self.position = position
+    def __init__(self, current_position):
+        self.current_position = current_position
 
-    def isBlocked(self):
-        row, col = self.position
-        if self.gameMap[row][col] == "+" or self.gameMap[row][col] == "#":
+    def is_blocked(self, new_row, new_col, game_map):
+        cell = game_map.matrix[new_row][new_col]
+        if cell == Obstacles.DESTR or cell == Obstacles.INDESTR or cell == Bomb.SYMBOL or cell == Enemy.SYMBOL:
             return True
-        else:
-            return False
+            
+        return False
 
-    def move(self):
-        pairs = list(self.directions.values())
-        row, col = random.choice(pairs)
+    def move(self, game_map):
+        from model.Map import Map
 
-        if self.isBlocked(self.position):
-            print("Can't move, position is blocked")
-        
-        if (self.position == "P"):
+        old_row, old_col = self.current_position
+
+        row, col = random.choice(list(self.directions.values()))
+
+        new_row = old_row + row
+        new_col = old_col + col
+
+        if self.is_blocked(new_row, new_col, game_map):
+            print("Can't move ENEMY, position is blocked")
+            return
+
+        if (game_map.matrix[new_row][new_col] == "P"):
             print("Enemy killed Played. Game Over...")
-        else:
-            pass
+            return
         
+        if game_map.matrix[old_row][old_col] == Enemy.SYMBOL:
+            game_map.update_cell(old_row, old_col, Map.EMPTY)
+
+        game_map.update_cell(new_row, new_col, Enemy.SYMBOL)
+
+        self.current_position = (new_row, new_col)
 
     
