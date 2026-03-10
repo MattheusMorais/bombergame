@@ -2,12 +2,14 @@ import json
 
 class GameState:
 
-    def __init__(self, config_path = "config/gameConfig.json"):
-        self.config_path = config_path
+    def __init__(self):
+        self.config_path = "config/gameConfig.json"
         self.config = {}
 
         # default values case JSON fail
         self.rounds_played = 1
+        self.rounds_survived = 1
+        self.difficulty = "easy"
         self.survived_turns = 1
         self.bombs_utilized =  0
         self.game_over_cause = "None"
@@ -18,6 +20,7 @@ class GameState:
         self.enemy_start = 2
         self.enemy_quantity = 2
         self.enemy_spawn_frequency = 0
+        self.killed_enemies = 0
         self.obstacle_destruction_rate = 0.90
 
     def get_rounds_played(self):
@@ -25,6 +28,18 @@ class GameState:
     
     def set_rounds_played(self, value):
         self.rounds_played = value
+
+    def get_rounds_survived(self):
+        return self.rounds_survived
+    
+    def set_rounds_survived(self, value):
+        self.rounds_survived = value
+
+    def get_difficulty(self):
+        return self.difficulty
+    
+    def set_difficulty(self, value):
+        self.difficulty = value
 
     def get_survived_turns(self):
         return self.survived_turns
@@ -86,6 +101,12 @@ class GameState:
     def set_enemy_spawn_frequency(self, value):
         self.enemy_spawn_frequency = value
 
+    def get_killed_enemies(self):
+        return self.killed_enemies
+    
+    def set_killed_enemies(self, value):
+        self.killed_enemies = value
+
     def get_obstacle_destruction_rate(self):
         return self.obstacle_destruction_rate
     
@@ -98,6 +119,8 @@ class GameState:
                 self.config = json.load(configFile)
 
             self.rounds_played = self.config.get("roundsPlayed", self.rounds_played)
+            self.rounds_survived = self.config.get("roundsSurvived", self.rounds_survived)
+            self.difficulty = self.config.get("difficulty", self.difficulty)
             self.survived_turns = self.config.get("survivedTurns", self.survived_turns)
             self.bombs_utilized = self.config.get("bombsUtilized", self.bombs_utilized)
             self.game_over_cause = self.config.get("gameOverCause", self.game_over_cause)
@@ -108,9 +131,33 @@ class GameState:
             self.enemy_start = self.config.get("enemyStart", self.enemy_start)
             self.enemy_quantity = self.config.get("enemyQuantity", self.enemy_quantity)
             self.enemy_spawn_frequency = self.config.get("enemySpawnFrequency", self.enemy_spawn_frequency)
+            self.killed_enemies = self.config.get("enemiesKilled", self.killed_enemies)
             self.obstacle_destruction_rate = self.config.get("obstacleDestructionRate", self.obstacle_destruction_rate)
 
         except FileNotFoundError:
             print("Erro ao abrir arquivo! Arquivo não existe.")
         
-        print(self.config) # debug
+        for key, value in self.config.items():
+            print(key," : ", value)
+
+    def save(self):
+        configs = {
+            "roundsPlayed" : self.rounds_played,
+            "roundsSurvived" : self.rounds_survived,
+            "difficulty" : self.difficulty,
+            "survivedTurns" : 0,
+            "bombsUtilized" : 0,
+            "gameOverCause" : self.game_over_cause,
+            "gameOverTurn" : 0,
+            "maximumTurn" : self.maximum_turn,
+            "bombRange" : self.bomb_range,
+            "bombTimer" : self.bomb_timer,
+            "enemyStart" : self.enemy_start,
+            "enemyQuantity" : self.enemy_quantity,
+            "enemySpawnFrequency" : self.enemy_spawn_frequency,
+            "enemiesKilled" : self.killed_enemies,
+            "obstacleDestructionRate" : self.obstacle_destruction_rate
+        }
+
+        with open(self.config_path, "w") as file:
+            json.dump(configs, file, indent=4)
