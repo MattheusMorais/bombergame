@@ -19,5 +19,4 @@ class GameOver:
         else:
             print(f"  💀  GAME OVER  💀")
             print(f"  Eliminado por: {self.game_over_cause} no turno {self.game_over_turn}")
-        return
- 
+        

@@ -1,5 +1,5 @@
 from model.Bomb import Bomb
-from model.Helper import MAP_EMPTY, ENEMY_SYMBOL, OBSTACLE_DESTR, OBSTACLE_INDESTR
+from model.Helper import MAP_EMPTY, ENEMY_SYMBOL, OBSTACLE_DESTR, OBSTACLE_INDESTR, BOMB_SYMBOL
 
 class Player:
 
@@ -19,34 +19,33 @@ class Player:
         self.player_alive = True
         
     def move(self, command, game_map):
-
-            if self.is_blocked(command, game_map):
-                print("Caminho bloqueado")
-                return
+        if self.is_blocked(command, game_map):
+            print("Caminho bloqueado")
+            return
             
-            if command in self.directions:
-                old_row, old_col = self.current_position
-                drow, dcol = self.directions[command]
+        if command in self.directions:
+            old_row, old_col = self.current_position
+            drow, dcol = self.directions[command]
 
-                new_row = old_row + drow
-                new_col = old_col + dcol
+            new_row = old_row + drow
+            new_col = old_col + dcol
 
-                if game_map.matrix[old_row][old_col] == Bomb.SYMBOL:
-                    game_map.update_cell(old_row, old_col, Bomb.SYMBOL)
-                else:
-                    game_map.update_cell(old_row, old_col, MAP_EMPTY)
+            if game_map.matrix[old_row][old_col] == Bomb.SYMBOL:
+                game_map.update_cell(old_row, old_col, Bomb.SYMBOL)
+            else:
+                game_map.update_cell(old_row, old_col, MAP_EMPTY)
 
-                if game_map.matrix[new_row][new_col] == Bomb.SYMBOL:
-                    game_map.update_cell(new_row, new_col, Bomb.SYMBOL)
-                else:
-                    game_map.update_cell(new_row, new_col, Player.SYMBOL)
+            if game_map.matrix[new_row][new_col] == Bomb.SYMBOL:
+                game_map.update_cell(new_row, new_col, Bomb.SYMBOL)
+            else:
+                game_map.update_cell(new_row, new_col, Player.SYMBOL)
 
-                self.current_position = (new_row, new_col)
+            self.current_position = (new_row, new_col)
 
-                survived_turns = self.game_state.get_survived_turns()
+            survived_turns = self.game_state.get_survived_turns()
 
-                self.game_state.set_survived_turns(survived_turns+1)
-                game_map.print_map()
+            self.game_state.set_survived_turns(survived_turns+1)
+                
             
     def put_bomb(self, command, gamemap):
         if command == 'f':
@@ -71,7 +70,7 @@ class Player:
 
             cell = game_map.matrix[new_row][new_col]
 
-            if cell == OBSTACLE_DESTR or cell == OBSTACLE_INDESTR or cell == ENEMY_SYMBOL:
+            if cell == OBSTACLE_DESTR or cell == OBSTACLE_INDESTR or cell == ENEMY_SYMBOL or cell == BOMB_SYMBOL:
                 print("Player cant move, blocked")
                 return True
             
