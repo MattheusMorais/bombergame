@@ -12,9 +12,7 @@ class Obstacles:
         destructable_rate = self.game_state.config["obstacleDestructionRate"]
         random_rate = random.random()
         if random_rate < destructable_rate:
-            print("Objeto destrutivel gerado")
             return True
         else:
-            print("Objeto indestrutivel gerado")
             return False
             

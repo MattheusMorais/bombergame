@@ -1,7 +1,8 @@
 import random
-from model.Enemy import Enemy
+from model.Helper import ENEMY_SYMBOL
 from model.Obstacles import Obstacles
 from model.Player import Player
+from model.Bomb import Bomb
 
 class Map:
 
@@ -14,6 +15,9 @@ class Map:
         self.player_row, self.player_col = Player.spawn_position
         self.enemy_start = game_state.config["enemyStart"]
         self.enemy_quantity = game_state.config["enemyQuantity"]
+        self.obstacles = []
+        self.num_obstacles = 3
+        self.min_distance_from_border = 3
         self.create_map()
 
     def create_map(self):
@@ -26,16 +30,12 @@ class Map:
                     self.matrix[i][j] = Obstacles.INDESTR
     
         # Create obstacles in Map
-        obstacles = []
-        num_obstacles = 3
-        min_distance_from_border = 3
-
-        while len(obstacles) < num_obstacles:
+        while len(self.obstacles) < self.num_obstacles:
             row = random.randint(1, self.size - 2)  
             col = random.randint(1, self.size - 2)
 
             if self.matrix[row][col] == self.EMPTY:
-                if abs(row - self.player_row) + abs(col - self.player_col) >= min_distance_from_border:
+                if abs(row - self.player_row) + abs(col - self.player_col) >= self.min_distance_from_border:
 
                     obstacle = Obstacles(self.game_state)
 
@@ -44,12 +44,13 @@ class Map:
                     else:
                         self.matrix[row][col] = Obstacles.INDESTR
 
-                    obstacles.append((obstacle, row, col))
+                    self.obstacles.append((obstacle, row, col))
 
         # Put Player in Map
         row, col = Player.spawn_position
         self.matrix[row][col] = Player.SYMBOL
 
+        self.print_map()
         return self.matrix
     
     def get_free_positions(self):
@@ -71,28 +72,40 @@ class Map:
             
     def chain_explosion(self, bomb, player_1, enemies):
         explosion_tiles = bomb.get_explosion_tiles()
+        original_cells = {}
 
         for row, col in explosion_tiles:
             cell = self.matrix[row][col]
 
             if cell == Obstacles.INDESTR:
                 continue
-        
+                
+            original_cells[(row, col)] = cell
             self.update_cell(row, col, "*")
 
-            if cell == Obstacles.DESTR:
-                self.update_cell(row, col, " ")
+        self.print_map()
 
-            if cell == Enemy.SYMBOL:
-                self.update_cell(row, col, " ")
+        hit_enemies = []
+        player_hit = False
+        for (row, col), original_cell in original_cells.items():
+            if original_cell == Obstacles.DESTR:
+                self.update_cell(row, col, self.EMPTY)
+            elif original_cell == ENEMY_SYMBOL or original_cell == Player.SYMBOL:
+                self.update_cell(row, col, self.EMPTY)
+            elif original_cell == Bomb.SYMBOL:
+                self.update_cell(row, col, self.EMPTY)
+            else:
+                self.update_cell(row, col, original_cell)
+        
+            for enemy in enemies:
+                if enemy.current_position == (row, col):
+                    hit_enemies.append(enemy)
 
-            # for enemy in self.enemies:
-            #     if enemy.current_position == (row, col):
-            #         enemy.die()
+            if player_1.current_position == (row, col):
+                player_hit = True
 
-            # if player_1.current_position == (row, col):
-            #     player_1.die()
-  
+        return hit_enemies, player_hit
+
     def print_map(self):
         for row in self.matrix:
             print(self.EMPTY.join(row))
