@@ -1,4 +1,5 @@
 from model.Bomb import Bomb
+from model.Helper import MAP_EMPTY, ENEMY_SYMBOL, OBSTACLE_DESTR, OBSTACLE_INDESTR
 
 class Player:
 
@@ -15,9 +16,9 @@ class Player:
         self.active_bombs = []
         self.current_position = self.spawn_position
         self.game_state = game_state
+        self.player_alive = True
         
     def move(self, command, game_map):
-            from model.Map import Map
 
             if self.is_blocked(command, game_map):
                 print("Caminho bloqueado")
@@ -33,7 +34,7 @@ class Player:
                 if game_map.matrix[old_row][old_col] == Bomb.SYMBOL:
                     game_map.update_cell(old_row, old_col, Bomb.SYMBOL)
                 else:
-                    game_map.update_cell(old_row, old_col, Map.EMPTY)
+                    game_map.update_cell(old_row, old_col, MAP_EMPTY)
 
                 if game_map.matrix[new_row][new_col] == Bomb.SYMBOL:
                     game_map.update_cell(new_row, new_col, Bomb.SYMBOL)
@@ -41,6 +42,11 @@ class Player:
                     game_map.update_cell(new_row, new_col, Player.SYMBOL)
 
                 self.current_position = (new_row, new_col)
+
+                survived_turns = self.game_state.get_survived_turns()
+
+                self.game_state.set_survived_turns(survived_turns+1)
+                game_map.print_map()
             
     def put_bomb(self, command, gamemap):
         if command == 'f':
@@ -51,8 +57,10 @@ class Player:
             bomb = Bomb(row, col, self.game_state)
             self.active_bombs.append(bomb)
 
+            bombs_utilized = self.game_state.get_bombs_utilized()
+            self.game_state.set_bombs_utilized(bombs_utilized+1)
+        
     def is_blocked(self, command, game_map):
-        from model.Obstacles import Obstacles
         row, col = self.current_position
 
         if command in self.directions:
@@ -61,8 +69,16 @@ class Player:
             new_row = row + drow
             new_col = col + dcol
 
-            if game_map.matrix[new_row][new_col] == Obstacles.DESTR or game_map.matrix[new_row][new_col] == Obstacles.INDESTR:
+            cell = game_map.matrix[new_row][new_col]
+
+            if cell == OBSTACLE_DESTR or cell == OBSTACLE_INDESTR or cell == ENEMY_SYMBOL:
+                print("Player cant move, blocked")
                 return True
             
         return False
-        
+    
+    def is_alive(self):
+        if self.player_alive == True:
+            return True
+        return False
+    
