@@ -13,8 +13,8 @@ class Map:
         self.matrix = None
         self.size = 12
         self.player_row, self.player_col = Player.spawn_position
-        self.enemy_start = game_state.config["enemyStart"]
-        self.enemy_quantity = game_state.config["enemyQuantity"]
+        self.initial_number_of_enemies = game_state.get_enemy_start()
+        self.enemy_quantity = game_state.get_enemy_quantity()
         self.obstacles = []
         self.num_obstacles = 3
         self.min_distance_from_border = 3
@@ -50,7 +50,6 @@ class Map:
         row, col = Player.spawn_position
         self.matrix[row][col] = Player.SYMBOL
 
-        self.print_map()
         return self.matrix
     
     def get_free_positions(self):
@@ -64,8 +63,11 @@ class Map:
                         free_positions.append((i, j))
         return free_positions
     
+    def is_index_valid(self, row, col):
+        return 0 <= row < self.size and 0 <= col < self.size
+            
     def update_cell(self, row, col, symbol):
-        if 0 <= row < self.size and 0 <= col < self.size:
+        if self.is_index_valid(row, col):
             self.matrix[row][col] = symbol
         else:
             print(f"Tentativa de atualizar célula inválida: ({row},{col})")
@@ -75,6 +77,9 @@ class Map:
         original_cells = {}
 
         for row, col in explosion_tiles:
+            if not self.is_index_valid(row, col):
+                continue
+
             cell = self.matrix[row][col]
 
             if cell == Obstacles.INDESTR:
@@ -105,7 +110,7 @@ class Map:
                 player_hit = True
 
         return hit_enemies, player_hit
-
+    
     def print_map(self):
         for row in self.matrix:
             print(self.EMPTY.join(row))
