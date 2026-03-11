@@ -1,12 +1,36 @@
 import json
 
 class GameState:
+    """  
+    Representa o estado do jogo e gerencia a leitura e salva a escrita das configurações em gameConfig.json.
+
+    Esta classe permite carregar e salvar os atributos do jogo, fornecendo valores padrão caso o arquivo esteja ausente ou contenha valores inválidos. 
+    Todos os atributos têm getters e setters para controle de acesso e atualização dos dados, permite que outras partes do jogo leiam e alterem informações 
+    do jogador e do mapa sem manipular diretamente o JSON. Utiliza o método save() para escrever e de fato sobrescrever o JSON.
+    
+    Attributes:
+        rounds_played (int): Número de partidas já jogadas.
+        rounds_survived (int): Número de vezes que o jogador já sobreviveu.
+        difficulty (str): Dificuldade atual do jogo ('easy', 'medium', 'hard').
+        survived_turns (int): Número de turnos sobrevividos na partida atual.
+        bombs_utilized (int): Número de bombas utilizadas na partida atual.
+        game_over_cause (str): Causa da última morte do jogador.
+        game_over_turn (int): Turno em que o jogador morreu na última partida.
+        maximum_turn (int): Limite máximo de turnos por partida.
+        bomb_range (int): Alcance da bomba em células.
+        bomb_timer (int): Quantidade de turnos até a detonação da bomba.
+        enemy_start (int): Número inicial de inimigos no mapa.
+        enemy_quantity (int): Quantidade atual de inimigos vivos no mapa.
+        enemy_spawn_frequency (int): Quantos inimigos vão nascer a cada 5 turnos sobrevividos, é baseado na dificuldade.
+        killed_enemies (int): Número de inimigos mortos na partida atual.
+        obstacle_destruction_rate (float): Probabilidade de obstáculos destruíveis e indestrutíveis aparecerem no mapass.
+    """    
 
     def __init__(self):
         self.config_path = "config/gameConfig.json"
         self.config = {}
 
-        # default values case JSON fail
+        # Valores padrão para caso JSON falhe
         self.rounds_played = 1
         self.rounds_survived = 1
         self.difficulty = "easy"

@@ -2,6 +2,15 @@ import random
 from model.Helper import OBSTACLE_DESTR, OBSTACLE_INDESTR, BOMB_SYMBOL, PLAYER_SYMBOL
 
 class Enemy:
+    """
+    Representa um inimigo no mapa, capaz de se mover aleatoriamente 
+    e colidir com obstáculos, bombas ou o jogador.
+
+    Attributes:
+        SYMBOL (str): Símbolo usado para representar o inimigo no mapa.
+        directions (dict): Dicionário de movimentos possíveis (w,a,s,d).
+        current_position (tuple): Tupla (linha, coluna) indicando a posição atual.
+    """
 
     SYMBOL = "E"
     directions = {

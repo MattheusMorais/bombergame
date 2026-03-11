@@ -1,4 +1,11 @@
 class StartMenu:
+    """ 
+    Exibe o menu inicial do jogo e, se houver partidas anteriores, apresenta estatísticas da última sessão.
+
+    Attributes:
+        game_state (GameState): Objeto que mantém o estado atual do jogo, incluindo número de rodadas jogadas, 
+                    causa da última morte e inimigos eliminados.
+    """
 
     def __init__(self, game_state):
         self.game_state = game_state

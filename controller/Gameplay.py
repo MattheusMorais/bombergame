@@ -10,6 +10,20 @@ from view.GameOver import GameOver
 from view.StartMenu import StartMenu
 
 class Gameplay:
+    """
+    Controla toda a lógica do jogo: inicialização, loop principal, inimigos, 
+    bombas, jogador, dificuldade e Game Over.
+
+    Attributes:
+        game_state (GameState): Instância que mantém o estado do jogo.
+        start_menu (StartMenu): Menu inicial com estatísticas anteriores.
+        enemies_killed (int): Contador de inimigos eliminados na partida atual.
+        initial_number_of_enemies (int): Número de inimigos ao iniciar a partida.
+        enemies (list): Lista de inimigos ativos no mapa.
+        start_game_map: Instância do mapa do jogo.
+        free_positions (list): Posições livres no mapa para spawn de inimigos.
+        player_1: Instância do jogador.
+    """
 
     def __init__(self):
         self.game_state = GameState()
@@ -21,21 +35,19 @@ class Gameplay:
         self.game_state.set_game_over_cause("None")
         self.enemies = []
 
-        # Start Menu
-        
-
-        # Creating start Map
+        # Cria o mapa
         self.start_game_map = Map(self.game_state)
 
-        # Getting free positions on map
-        self.free_positions = self.start_game_map.get_free_positions()  # return list of (row, col)
+        # Salva as posições livres no mapa
+        self.free_positions = self.start_game_map.get_free_positions()  # Retorna uma lista com (row, col)
 
-        # Creating player
+        # Instancia o jogador
         self.player_1 = Player(self.game_state)
 
-        # Creating Obstacle
+        # Instancia obstaculo
         obstacle = Obstacles(self.game_state)
 
+        # Cria os inimigos iniciais e coloca no mapa
         self.create_start_enemies()
 
     def game_loop(self):
@@ -98,7 +110,6 @@ class Gameplay:
                 break
 
     def create_start_enemies(self):
-        # Creating enemies and putting on map
         for _ in range(self.initial_number_of_enemies):
             free_position = random.choice(self.free_positions)
             self.free_positions.remove(free_position)
@@ -222,7 +233,7 @@ class Gameplay:
                 print("***** EXPLOSÃO EM CADEIA ACIMA ***** ")
                 self.player_1.active_bombs.remove(bomb)
 
-            if player_hit: # GameOver
+            if player_hit: # Fim do jogo
                 self.player_dead_by_explosion()
 
             self.update_enemies_quantity(hit_enemies)
@@ -273,6 +284,3 @@ class Gameplay:
                     self.game_state.set_enemy_quantity(enemy_quantity - 1)
         
         self.game_state.set_killed_enemies(self.enemies_killed)
-
-    
-

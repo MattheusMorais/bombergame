@@ -5,6 +5,22 @@ from model.Player import Player
 from model.Bomb import Bomb
 
 class Map:
+    """
+    Representa o mapa do jogo, contendo o jogador, inimigos, obstáculos e suas interações.
+
+    Attributes:
+        EMPTY (str): Símbolo que representa célula vazia.
+        game_state: Objeto que mantém o estado do jogo.
+        size (int): Dimensão do mapa (matriz quadrada).
+        player_row (int): Linha da posição inicial do jogador.
+        player_col (int): Coluna da posição inicial do jogador.
+        initial_number_of_enemies (int): Quantidade inicial de inimigos no jogo.
+        enemy_quantity (int): Quantidade total de inimigos no mapa.
+        obstacles (list): Lista de obstáculos no mapa (instância + posição).
+        num_obstacles (int): Número de obstáculos a serem criados.
+        min_distance_from_border (int): Distância mínima entre obstáculos/jogador e bordas.
+        matrix (list): Representação 2D do mapa.
+    """
 
     EMPTY = " "
 
@@ -23,13 +39,13 @@ class Map:
     def create_map(self):
         self.matrix = [[self.EMPTY for _ in range(self.size)] for _ in range(self.size)]
 
-        # Create external walls to delimit player Map
+        # Cria paredes indestrutiveis para delimitar o mapa
         for i in range(self.size):
             for j in range(self.size):
                 if i==0 or i== self.size-1 or j == 0 or j == self.size-1:
                     self.matrix[i][j] = Obstacles.INDESTR
     
-        # Create obstacles in Map
+        # Cria obstaculos no mapa
         while len(self.obstacles) < self.num_obstacles:
             row = random.randint(1, self.size - 2)  
             col = random.randint(1, self.size - 2)
@@ -46,7 +62,7 @@ class Map:
 
                     self.obstacles.append((obstacle, row, col))
 
-        # Put Player in Map
+        # Coloca o jogador no mapa
         row, col = Player.spawn_position
         self.matrix[row][col] = Player.SYMBOL
 
