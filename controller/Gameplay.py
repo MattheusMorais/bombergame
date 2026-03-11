@@ -248,7 +248,7 @@ class Gameplay:
         self.start_game_map.print_map()
         
     def player_survived(self):
-        self.game_state.set_game_over_cause(GameOver.cause_SUCESS)
+        self.game_state.set_game_over_cause(GameOver.cause_SUCCESS)
 
         game_over_cause = self.game_state.get_game_over_cause()
         game_over_turn = self.game_state.get_survived_turns()
