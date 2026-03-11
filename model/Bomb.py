@@ -1,13 +1,13 @@
 class Bomb:
-    
+   
     SYMBOL = "B"
 
     def __init__(self, row, col, game_state):
         self.row = row
         self.col = col
-        self.timer = game_state.config["bombTimer"]
-        self.range = game_state.config["bombRange"]
-        
+        self.timer = game_state.get_bomb_timer()
+        self.range = game_state.get_bomb_range()
+
     def tick(self):
         self.timer -= 1
         if self.timer == 0:
