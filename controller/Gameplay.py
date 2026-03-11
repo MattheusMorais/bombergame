@@ -14,15 +14,15 @@ class Gameplay:
     def __init__(self):
         self.game_state = GameState()
         self.game_state.open()
-        self.survivedTurns = self.game_state.config["survivedTurns"]
-        self.roundsPlayed = self.game_state.config["roundsPlayed"]
-        self.bombsUtilized = self.game_state.config["bombsUtilized"]
-        self.initial_number_of_enemies = self.game_state.config["enemyStart"]
-        self.enemies = []
+        self.start_menu = StartMenu(self.game_state)
         self.enemies_killed = 0
+        self.initial_number_of_enemies = self.game_state.get_enemy_start()
+        self.game_state.set_enemy_quantity(self.initial_number_of_enemies)
+        self.game_state.set_game_over_cause("None")
+        self.enemies = []
 
         # Start Menu
-        self.start_menu = StartMenu(self.game_state)
+        
 
         # Creating start Map
         self.start_game_map = Map(self.game_state)
@@ -36,41 +36,39 @@ class Gameplay:
         # Creating Obstacle
         obstacle = Obstacles(self.game_state)
 
-    def game_loop(self):
-        
-        print("Warning!! Enemies spawning...")
-        # Creating enemies and putting on map
-        
-        for _ in range(self.initial_number_of_enemies):
-            free_position = random.choice(self.free_positions)
-            self.free_positions.remove(free_position)
-            enemy = Enemy(free_position)
-            self.enemies.append(enemy)
-            row, col = free_position
-            self.start_game_map.update_cell(row, col, enemy.SYMBOL)
+        self.create_start_enemies()
 
-        # Print map
-        self.start_game_map.print_map()
+    def game_loop(self):
 
         while self.player_1.is_alive() and self.game_state.get_game_over_cause() == "None":
 
-            print(f"move: w/a/s/d        "
-                  f"put bomb: f        "
-                  f"quit: q        "
-                  f"bombs utilized: {self.game_state.get_bombs_utilized()}        "
-                  f"enemies alive: {self.game_state.get_enemy_quantity()}        "
-                  f"survived turns: {self.game_state.get_survived_turns()}        "
-                  f"maximum turn: {self.game_state.get_maximum_turn()}        "
+            print(f"Movimento: w/a/s/d        "
+                  f"Colocar bomba: f        "
+                  f"Sair: q        "
+                  f"Bombas utilizadas: {self.game_state.get_bombs_utilized()}        "
+                  f"Inimigos vivo: {self.game_state.get_enemy_quantity()}        "
+                  f"Turnos sobrevividos: {self.game_state.get_survived_turns()}        "
+                  f"Turno maximo: {self.game_state.get_maximum_turn()}\n"
+                  f"Dificuldade atual: {self.game_state.get_difficulty()}   "
+                  f"Abaixar dificuldade: Digite facil      "
+                  f"Inimigos mortos: {self.enemies_killed}       "
                   )
             
             command = input("").lower()
 
-            if command not in ["w", "a", "s", "d", "f", "q"]:
+            if command not in ["w", "a", "s", "d", "f", "q", "facil"]:
                 print("Digite um comando válido!")
                 continue
 
             if command == "q":
-                return
+                return "close"
+            
+            if command == "facil":
+                self.lower_difficulty_to_easy()
+                self.game_state.save()
+                print("")
+                print("Dificuldade alterada para fácil. Reiniciando o jogo...\n")
+                break
 
             if command in ["w", "a", "s", "d"]:
                 self.player_1.move(command, self.start_game_map)
@@ -82,12 +80,138 @@ class Gameplay:
             self.update_bombs()
             self.update_enemies()
 
+            if self.game_state.get_survived_turns() % 5 == 0:
+                self.create_dynamic_enemies()
+
             if not self.player_1.is_alive():
+                self.update_rounds_played()
+                self.game_state.save()
                 break
 
-            if self.game_state.get_survived_turns() == self.game_state.get_maximum_turn():
+            if self.game_state.get_survived_turns() >= self.game_state.get_maximum_turn():
+                self.update_rounds_played()
+                self.update_rounds_survived()
+                self.update_difficulty()
+                
                 self.player_survived()
+                self.game_state.save()  
+                break
 
+    def create_start_enemies(self):
+        # Creating enemies and putting on map
+        for _ in range(self.initial_number_of_enemies):
+            free_position = random.choice(self.free_positions)
+            self.free_positions.remove(free_position)
+            enemy = Enemy(free_position)
+            self.enemies.append(enemy)
+            row, col = free_position
+            self.start_game_map.update_cell(row, col, enemy.SYMBOL)
+        
+        self.start_game_map.print_map()
+        
+    def create_dynamic_enemies(self):
+        self.update_enemy_spawn_frequency()
+        enemies_spawned = []
+
+        enemies_to_spawn = self.game_state.get_enemy_spawn_frequency()
+        for _ in range(enemies_to_spawn):
+            free_position = random.choice(self.free_positions)
+            self.free_positions.remove(free_position)
+            enemy = Enemy(free_position)
+            enemies_spawned.append(enemy)
+            self.enemies.append(enemy)
+            row, col = free_position
+            self.start_game_map.update_cell(row, col, enemy.SYMBOL)
+        
+        enemies_quantity = self.game_state.get_enemy_quantity()
+        self.game_state.set_enemy_quantity(enemies_quantity + len(enemies_spawned))
+
+    def update_rounds_played(self):
+        rounds_played = self.game_state.get_rounds_played()
+        self.game_state.set_rounds_played(rounds_played+1)
+
+    def update_rounds_survived(self):
+        rounds_survived = self.game_state.get_rounds_survived()
+        self.game_state.set_rounds_survived(rounds_survived+1)
+        
+    def update_difficulty(self):
+
+        if self.game_state.get_rounds_survived() >= 6:
+            self.game_state.set_difficulty("hard")
+
+        elif self.game_state.get_rounds_survived() >= 3:
+            self.game_state.set_difficulty("medium")
+        
+        self.update_bomb_timer()
+        self.update_bomb_range()
+        self.update_obstacles_proportion_rate()
+        self.update_initial_enemies()
+        self.update_maximum_turn_limit()
+
+        
+    def lower_difficulty_to_easy(self):
+        self.game_state.set_rounds_survived(0)
+        self.game_state.set_difficulty("easy")
+        self.game_state.set_maximum_turn(15)
+        self.game_state.set_bomb_range(1)
+        self.game_state.set_bomb_timer(5)
+        self.game_state.set_enemy_start(5)
+        self.game_state.set_enemy_spawn_frequency(1)
+        self.game_state.set_obstacle_destruction_rate(0.9)
+
+    def update_bomb_timer(self):
+        difficulty = self.game_state.get_difficulty()
+
+        if difficulty == "hard":
+            self.game_state.set_bomb_timer(3)
+        
+        elif difficulty == "medium":
+            self.game_state.set_bomb_timer(4)
+
+    def update_bomb_range(self):
+        difficulty = self.game_state.get_difficulty()
+
+        if difficulty == "hard":
+            self.game_state.set_bomb_range(3)
+        
+        elif difficulty == "medium":
+            self.game_state.set_bomb_range(2)
+
+    def update_obstacles_proportion_rate(self):
+        difficulty = self.game_state.get_difficulty()
+
+        if difficulty == "hard":
+            self.game_state.set_obstacle_destruction_rate(0.30)
+        
+        elif difficulty == "medium":
+            self.game_state.set_obstacle_destruction_rate(0.50)
+
+    def update_initial_enemies(self):
+        difficulty = self.game_state.get_difficulty()
+
+        if difficulty == "hard":
+            self.game_state.set_enemy_start(15)
+        
+        elif difficulty == "medium":
+            self.game_state.set_enemy_start(10)
+
+    def update_maximum_turn_limit(self):
+        difficulty = self.game_state.get_difficulty()
+
+        if difficulty == "hard":
+            self.game_state.set_maximum_turn(35)
+        
+        elif difficulty == "medium":
+            self.game_state.set_maximum_turn(25)
+
+    def update_enemy_spawn_frequency(self):
+        difficulty = self.game_state.get_difficulty()
+        if difficulty == "hard":
+            self.game_state.set_enemy_spawn_frequency(4)
+        
+        elif difficulty == "medium":
+            self.game_state.set_enemy_spawn_frequency(2)
+        
     def update_bombs(self):
         player_hit = False
         hit_enemies = []
@@ -95,16 +219,13 @@ class Gameplay:
         for bomb in self.player_1.active_bombs[:]:
             if bomb.tick():
                 hit_enemies, player_hit = self.start_game_map.chain_explosion(bomb, self.player_1, self.enemies)
+                print("***** EXPLOSÃO EM CADEIA ACIMA ***** ")
                 self.player_1.active_bombs.remove(bomb)
 
-        self.start_game_map.print_map()
+            if player_hit: # GameOver
+                self.player_dead_by_explosion()
 
-        for enemy in hit_enemies:
-            self.enemies.remove(enemy)
-            self.update_enemies_quantity
-
-        if player_hit: # GameOver
-            self.player_dead_by_explosion()
+            self.update_enemies_quantity(hit_enemies)
 
     def update_enemies(self):
         
@@ -112,15 +233,14 @@ class Gameplay:
             if enemy.move(self.start_game_map):
                 self.player_killed_by_enemy()
                 self.player_1.player_alive = False
-        
+                
         self.start_game_map.print_map()
-
+        
     def player_survived(self):
-        if self.game_state.get_survived_turns() == self.game_state.get_maximum_turn():
-            self.game_state.set_game_over_cause(GameOver.cause_SUCESS)
+        self.game_state.set_game_over_cause(GameOver.cause_SUCESS)
 
-            game_over_cause = self.game_state.get_game_over_cause()
-            game_over_turn = self.game_state.get_survived_turns()
+        game_over_cause = self.game_state.get_game_over_cause()
+        game_over_turn = self.game_state.get_survived_turns()
 
         GameOver(game_over_cause, game_over_turn)
     
@@ -144,13 +264,15 @@ class Gameplay:
 
         GameOver(game_over_cause, game_over_turn)
 
-    def update_enemies_quantity(self):
-        enemies_quantity = self.game_state.get_enemy_quantity()
-
-        for enemy in self.enemies:
-            enemies_quantity -= 1
-            self.enemies_killed += 1
+    def update_enemies_quantity(self, hit_enemies):
+        for enemy in self.enemies[:]: 
+                if enemy in hit_enemies:
+                    self.enemies.remove(enemy)
+                    self.enemies_killed += 1
+                    enemy_quantity = self.game_state.get_enemy_quantity()
+                    self.game_state.set_enemy_quantity(enemy_quantity - 1)
         
-        self.game_state.set_enemy_quantity(enemies_quantity)
+        self.game_state.set_killed_enemies(self.enemies_killed)
+
     
 
