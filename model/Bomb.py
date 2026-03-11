@@ -1,4 +1,14 @@
 class Bomb:
+    """
+    Representa uma bomba no mapa do jogo.
+
+    Attributes:
+        SYMBOL (str): Símbolo que representa a bomba no mapa.
+        row (int): Linha onde a bomba está posicionada.
+        col (int): Coluna onde a bomba está posicionada.
+        timer (int): Contador de turnos até a explosão.
+        range (int): Alcance da explosão da bomba.
+    """
    
     SYMBOL = "B"
 
@@ -10,9 +20,8 @@ class Bomb:
 
     def tick(self):
         self.timer -= 1
-        if self.timer == 0:
-            return True
-        
+        return self.timer == 0
+            
     def get_explosion_tiles(self):
         tiles = [(self.row, self.col)]
 
